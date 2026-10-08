@@ -21,7 +21,9 @@ import com.vaadin.flow.data.binder.ValidationException;
 
 @Component
 public class KafkaSendMessageExecutionBlock implements ExecutableBlock<KafkaSendMessageRecord> {
-    private static final Pattern VARIABLE = Pattern.compile("\\$\\{([^}]+)}");
+
+    private static final Pattern VARIABLE = Pattern.compile("\$\{([^}]+)}");
+
     private final KafkaConnectionService connections;
     private final KafkaMessageService messages;
 
@@ -52,18 +54,19 @@ public class KafkaSendMessageExecutionBlock implements ExecutableBlock<KafkaSend
 
     public BlockFormHandler<KafkaSendMessageRecord> blockForm() {
         return new BlockFormHandler<>() {
-            private KafkaMessageForm<KafkaSendMessageRecord> form;
-
             public Class<KafkaSendMessageRecord> beanClas() {
                 return KafkaSendMessageRecord.class;
             }
 
             public Binder<KafkaSendMessageRecord> createForm(VerticalLayout layout, List<Scope> scopes) {
-                form = new KafkaMessageForm<>(connections, messages, KafkaSendMessageRecord.class);
-                return form.create(layout, scopes);
+                return new KafkaMessageForm<>(
+                        connections,
+                        messages,
+                        KafkaSendMessageRecord.class,
+                        false).create(layout, scopes);
             }
 
-            public KafkaSendMessageRecord writeBean(Binder binder) throws ValidationException {
+            public KafkaSendMessageRecord writeBean(Binder<?> binder) throws ValidationException {
                 KafkaSendMessageRecord bean = new KafkaSendMessageRecord();
                 binder.writeBean(bean);
                 return bean;
@@ -86,17 +89,21 @@ public class KafkaSendMessageExecutionBlock implements ExecutableBlock<KafkaSend
         if (value == null) {
             return null;
         }
-        Matcher m = VARIABLE.matcher(value);
+
+        Matcher matcher = VARIABLE.matcher(value);
         StringBuffer out = new StringBuffer();
-        while (m.find()) {
-            Object v = manager.getVariable(m.group(1).trim());
-            m.appendReplacement(out, Matcher.quoteReplacement(v == null ? "" : String.valueOf(v)));
+
+        while (matcher.find()) {
+            Object valueObject = manager.getVariable(matcher.group(1).trim());
+            matcher.appendReplacement(out,
+                    Matcher.quoteReplacement(valueObject == null ? "" : String.valueOf(valueObject)));
         }
-        m.appendTail(out);
+
+        matcher.appendTail(out);
         return out.toString();
     }
 
-    private String emptyToNull(String v) {
-        return v == null || v.isBlank() ? null : v;
+    private String emptyToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
     }
 }
