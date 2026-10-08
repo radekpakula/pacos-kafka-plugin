@@ -1,0 +1,8 @@
+package org.pacos.plugin.kafka.backend.message;
+import org.apache.kafka.clients.producer.*; import org.apache.kafka.common.serialization.StringSerializer; import org.pacos.plugin.kafka.backend.connection.*; import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional; import java.util.*;
+@Service public class KafkaMessageService {
+ private final KafkaConnectionService connections; private final KafkaMessageTemplateRepository templates;
+ public KafkaMessageService(KafkaConnectionService connections,KafkaMessageTemplateRepository templates){this.connections=connections;this.templates=templates;}
+ public RecordMetadata send(Long connectionId,String topic,String key,String payload)throws Exception{KafkaConnection c=connections.find(connectionId).orElseThrow(()->new IllegalArgumentException("Kafka connection not found: "+connectionId));Properties p=connections.properties(c);p.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,StringSerializer.class.getName());p.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,StringSerializer.class.getName());p.put(ProducerConfig.ACKS_CONFIG,"all");try(Producer<String,String> producer=new KafkaProducer<>(p)){return producer.send(new ProducerRecord<>(topic,key,payload)).get();}}
+ @Transactional public KafkaMessageTemplate saveTemplate(KafkaMessageTemplate t){return templates.save(t);} @Transactional public void deleteTemplate(Long id){templates.deleteById(id);} public List<KafkaMessageTemplate> templates(){return templates.findAllByOrderByNameAsc();} public Optional<KafkaMessageTemplate> template(Long id){return templates.findById(id);}
+}
