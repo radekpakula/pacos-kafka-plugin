@@ -27,6 +27,17 @@
         <dependency><groupId>com.zaxxer</groupId><artifactId>HikariCP</artifactId><scope>provided</scope></dependency>
         <dependency><groupId>org.apache.kafka</groupId><artifactId>kafka-clients</artifactId><version>${kafka.version}</version></dependency>
         <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+         <!-- Open API -->
+                <dependency>
+                    <groupId>org.springdoc</groupId>
+                    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>javax.xml.bind</groupId>
+                    <artifactId>jaxb-api</artifactId>
+                    <scope>provided</scope>
+                </dependency>
     </dependencies>
     <repositories>
         <repository><id>PacOS repository</id><url>https://repo.pacos.dev/repository/pacos-maven-repo/</url><snapshots><enabled>true</enabled></snapshots></repository>
